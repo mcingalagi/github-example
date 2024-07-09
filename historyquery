@@ -66,3 +66,27 @@ WHERE
 ORDER BY 
     CONT_ID, h_create_dt;
 
+
+SELECT 
+    CONT_ID,
+    TO_CHAR(h_create_dt, 'YYYY-MM-DD HH24:MI:SS') AS change_date,
+    MARITAL_ST_TP_CD AS new_marital_status,
+    old_marital_status,
+    prev_marital_st
+FROM (
+    SELECT 
+        CONT_ID,
+        h_create_dt,
+        MARITAL_ST_TP_CD,
+        LAG(MARITAL_ST_TP_CD) OVER (PARTITION BY CONT_ID ORDER BY h_create_dt) AS old_marital_status,
+        LAG(MARITAL_ST_TP_CD, 2) IGNORE NULLS OVER (PARTITION BY CONT_ID ORDER BY h_create_dt) AS prev_marital_st
+    FROM 
+        H_PERSON
+) t
+WHERE 
+    -- Check for changes from value to NULL or NULL to value
+    (MARITAL_ST_TP_CD IS NOT NULL AND (MARITAL_ST_TP_CD <> old_marital_status OR old_marital_status IS NULL))
+    OR (MARITAL_ST_TP_CD IS NULL AND old_marital_status IS NOT NULL)
+ORDER BY 
+    CONT_ID, h_create_dt;
+
