@@ -24,3 +24,40 @@ SELECT
     MAX(CASE WHEN DayNumber = 10 THEN Date END) OVER (PARTITION BY PrimaryKey) AS TenthWorkingDay
 FROM 
     WorkingDays
+
+
+
+
+
+
+
+-- Calculate the working days with a self-join to generate a list of dates
+SELECT 
+    t.PrimaryKey,
+    MAX(CASE WHEN DayNumber = 5 THEN WorkingDate END) AS FifthWorkingDay,
+    MAX(CASE WHEN DayNumber = 10 THEN WorkingDate END) AS TenthWorkingDay
+FROM (
+    SELECT 
+        t.PrimaryKey,
+        DATEADD(DAY, n.Number, t.DateColumn) AS WorkingDate,
+        (SELECT COUNT(*)
+         FROM MyTable t2
+         WHERE t2.PrimaryKey = t.PrimaryKey
+           AND DATEADD(DAY, n.Number, t2.DateColumn) <= DATEADD(DAY, n.Number, t.DateColumn)
+           AND DATENAME(WEEKDAY, DATEADD(DAY, n.Number, t.DateColumn)) NOT IN ('Saturday', 'Sunday')
+        ) AS DayNumber
+    FROM 
+        MyTable t
+    JOIN 
+        (SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) - 1 AS Number
+         FROM master.dbo.spt_values
+         WHERE TYPE = 'P' AND ROW_NUMBER() <= 1000
+        ) n
+        ON DATEADD(DAY, n.Number, t.DateColumn) <= GETDATE()
+    WHERE 
+        DATENAME(WEEKDAY, DATEADD(DAY, n.Number, t.DateColumn)) NOT IN ('Saturday', 'Sunday')
+    GROUP BY 
+        t.PrimaryKey, t.DateColumn, DATEADD(DAY, n.Number, t.DateColumn)
+) t
+GROUP BY 
+    t.PrimaryKey;
