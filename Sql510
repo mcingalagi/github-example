@@ -1,3 +1,46 @@
+-- Create a temporary table or a derived table to help with calculations
+WITH WorkingDays AS (
+    SELECT
+        StartDate,
+        ROW_NUMBER() OVER (PARTITION BY StartDate ORDER BY DateAdd(day, n, StartDate)) AS WorkingDayNumber
+    FROM (
+        SELECT StartDate, DATEADD(day, n, StartDate) AS Date
+        FROM (
+            SELECT StartDate, n
+            FROM (
+                SELECT StartDate, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
+                FROM SourceDataExtension
+                CROSS JOIN (
+                    SELECT 0 AS n UNION ALL
+                    SELECT 1 UNION ALL
+                    SELECT 2 UNION ALL
+                    SELECT 3 UNION ALL
+                    SELECT 4 UNION ALL
+                    SELECT 5 UNION ALL
+                    SELECT 6 UNION ALL
+                    SELECT 7 UNION ALL
+                    SELECT 8 UNION ALL
+                    SELECT 9
+                ) AS Numbers
+            ) AS Days
+            WHERE DATEPART(dw, DATEADD(day, n, StartDate)) NOT IN (1, 7) -- Exclude weekends (1 = Sunday, 7 = Saturday)
+        ) AS WorkingDays
+    ) AS CalculatedDays
+)
+
+-- Query to insert/update the calculated working days into the target DE
+SELECT
+    StartDate,
+    MAX(CASE WHEN WorkingDayNumber = 5 THEN Date ELSE NULL END) AS FifthWorkingDay,
+    MAX(CASE WHEN WorkingDayNumber = 10 THEN Date ELSE NULL END) AS TenthWorkingDay
+INTO
+    TargetDataExtension
+FROM
+    WorkingDays
+GROUP BY
+    StartDate;
+
+
 
 <script runat="server">
     // Source and Target Data Extension Names
