@@ -1,0 +1,26 @@
+-- Generate a sequence of numbers
+WITH Numbers AS (
+    SELECT TOP 1000 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
+    FROM master.dbo.spt_values
+),
+
+-- Calculate working days for each record
+WorkingDays AS (
+    SELECT 
+        t.PrimaryKey,
+        DATEADD(DAY, n, t.DateColumn) AS Date,
+        ROW_NUMBER() OVER (PARTITION BY t.PrimaryKey ORDER BY DATEADD(DAY, n, t.DateColumn)) AS DayNumber
+    FROM 
+        Numbers n
+    JOIN 
+        MyTable t
+        ON DATENAME(WEEKDAY, DATEADD(DAY, n, t.DateColumn)) NOT IN ('Saturday', 'Sunday')
+)
+
+-- Select the 5th and 10th working days using window functions
+SELECT 
+    PrimaryKey,
+    MAX(CASE WHEN DayNumber = 5 THEN Date END) OVER (PARTITION BY PrimaryKey) AS FifthWorkingDay,
+    MAX(CASE WHEN DayNumber = 10 THEN Date END) OVER (PARTITION BY PrimaryKey) AS TenthWorkingDay
+FROM 
+    WorkingDays
