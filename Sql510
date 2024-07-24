@@ -1,3 +1,72 @@
+
+<script runat="server">
+    // Source and Target Data Extension Names
+    var sourceDEName = "SourceDataExtension"; // Replace with your source DE name
+    var targetDEName = "TargetDataExtension"; // Replace with your target DE name
+
+    // Initialize Data Extensions
+    var sourceDE = DataExtension.Init(sourceDEName);
+    var targetDE = DataExtension.Init(targetDEName);
+
+    // Retrieve rows from the source Data Extension
+    var sourceRows = sourceDE.Rows.Retrieve();
+    
+    // Function to check if a date is a weekend
+    function isWeekend(date) {
+        var day = date.getDay();
+        return (day === 0 || day === 6); // 0 = Sunday, 6 = Saturday
+    }
+
+    // Function to get the nth working day from a start date
+    function getNthWorkingDay(startDate, n) {
+        var currentDate = new Date(startDate);
+        var workingDaysCount = 0;
+
+        while (workingDaysCount < n) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            if (!isWeekend(currentDate)) {
+                workingDaysCount++;
+            }
+        }
+        return currentDate;
+    }
+
+    // Function to format the date as YYYY-MM-DD
+    function formatDate(date) {
+        var year = date.getFullYear();
+        var month = ('0' + (date.getMonth() + 1)).slice(-2);
+        var day = ('0' + date.getDate()).slice(-2);
+        return year + '-' + month + '-' + day;
+    }
+
+    // Loop through each row from the source DE, calculate the dates, and update the target DE
+    for (var i = 0; i < sourceRows.length; i++) {
+        var startDate = new Date(sourceRows[i].StartDate);
+        var fifthWorkingDay = getNthWorkingDay(startDate, 5);
+        var tenthWorkingDay = getNthWorkingDay(startDate, 10);
+
+        var fifthWorkingDayFormatted = formatDate(fifthWorkingDay);
+        var tenthWorkingDayFormatted = formatDate(tenthWorkingDay);
+
+        // Update or add the row in the target Data Extension
+        var updateStatus = targetDE.Rows.Update({
+            StartDate: formatDate(startDate),
+            FifthWorkingDay: fifthWorkingDayFormatted,
+            TenthWorkingDay: tenthWorkingDayFormatted
+        }, ["StartDate"]);
+
+        // If no rows were updated, insert a new row
+        if (updateStatus == 0) {
+            targetDE.Rows.Add({
+                StartDate: formatDate(startDate),
+                FifthWorkingDay: fifthWorkingDayFormatted,
+                TenthWorkingDay: tenthWorkingDayFormatted
+            });
+        }
+    }
+</script>
+
+
 <script runat="server">
     // Input: Start date (format YYYY-MM-DD)
     var startDate = new Date("2024-07-22"); // Replace with your date column value
