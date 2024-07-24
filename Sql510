@@ -1,5 +1,5 @@
 <script runat="server">
-    // Input: Date column value from Data Extension (format YYYY-MM-DD)
+    // Input: Start date (format YYYY-MM-DD)
     var startDate = new Date("2024-07-22"); // Replace with your date column value
 
     // Function to check if a date is a weekend
