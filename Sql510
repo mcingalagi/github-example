@@ -1,3 +1,40 @@
+
+%%[
+    /* Set the start date to January 1st */
+    SET @startDate = "2024-01-01"
+    SET @currentDate = @startDate
+    SET @workingDays = 0
+    SET @fifthWorkingDay = ""
+    SET @tenthWorkingDay = ""
+
+    /* Loop to calculate working days */
+    WHILE @workingDays < 10 DO
+        /* Get the day of the week for the current date */
+        SET @dayOfWeek = DatePart(@currentDate, "w")
+
+        /* Check if the day is a working day (Monday to Friday) */
+        IF @dayOfWeek != 1 AND @dayOfWeek != 7 THEN
+            /* Increment the working days counter */
+            SET @workingDays = @workingDays + 1
+            
+            /* Set the 5th and 10th working days */
+            IF @workingDays == 5 THEN
+                SET @fifthWorkingDay = @currentDate
+            ELSEIF @workingDays == 10 THEN
+                SET @tenthWorkingDay = @currentDate
+            ENDIF
+        ENDIF
+
+        /* Move to the next day */
+        SET @currentDate = DateAdd(@currentDate, 1, "d")
+    ENDWHILE
+]%%
+
+<p>Start Date: %%=FormatDate(@startDate, "yyyy-MM-dd")=%%</p>
+<p>5th Working Day: %%=FormatDate(@fifthWorkingDay, "yyyy-MM-dd")=%%</p>
+<p>10th Working Day: %%=FormatDate(@tenthWorkingDay, "yyyy-MM-dd")=%%</p>
+
+
 %%[
     SET @startDate = [DateColumn]
     SET @workingDays = 0
