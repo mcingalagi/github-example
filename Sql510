@@ -1,3 +1,28 @@
+%%[
+    SET @startDate = [DateColumn]
+    SET @workingDays = 0
+    SET @currentDate = @startDate
+    SET @fifthWorkingDay = ""
+    SET @tenthWorkingDay = ""
+
+    WHILE @workingDays < 10 DO
+        IF DatePart("w", @currentDate) != 1 AND DatePart("w", @currentDate) != 7 THEN
+            SET @workingDays = @workingDays + 1
+            IF @workingDays == 5 THEN
+                SET @fifthWorkingDay = @currentDate
+            ELSEIF @workingDays == 10 THEN
+                SET @tenthWorkingDay = @currentDate
+            ENDIF
+        ENDIF
+        SET @currentDate = DateAdd("d", 1, @currentDate)
+    ENDWHILE
+]%%
+
+5th Working Day: %%=FormatDate(@fifthWorkingDay, "yyyy-MM-dd")=%%
+10th Working Day: %%=FormatDate(@tenthWorkingDay, "yyyy-MM-dd")=%%
+
+
+
 -- Create a temporary table or a derived table to help with calculations
 WITH WorkingDays AS (
     SELECT
