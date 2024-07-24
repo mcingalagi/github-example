@@ -47,6 +47,7 @@
 
 
 
+
 <script runat="server">
     // Input: Date column value from Data Extension (format YYYY-MM-DD)
     var startDate = new Date("2024-07-24"); // Replace with your date column value
