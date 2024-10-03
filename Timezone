@@ -1,3 +1,10 @@
+SELECT *
+FROM YourDataExtension
+WHERE 
+    DATEADD(HOUR, 14, FormSubmissionDate) >= CAST(CONVERT(VARCHAR, GETDATE(), 112) AS DATETIME)
+    AND DATEADD(HOUR, 14, FormSubmissionDate) < CAST(CONVERT(VARCHAR, GETDATE() + 1, 112) AS DATETIME)
+
+
 
 %%[
     /* Get the current timestamp in CST (UTC-6) */
