@@ -16,3 +16,26 @@
 
 Current timestamp in Malaysia: %%=v(@formattedMalaysiaDate)=%%  
 Current timestamp in India: %%=v(@formattedIndiaDate)=%%
+
+
+
+
+
+%%[
+    /* Get the current timestamp in UTC */
+    SET @currentUTCDate = Now()
+
+    /* Malaysia is UTC+8 */
+    SET @malaysiaDate = DateAdd(@currentUTCDate, 8 * 60 * 60, "H")
+
+    /* India is UTC+5:30 */
+    SET @indiaDate = DateAdd(@currentUTCDate, (5 * 60 * 60) + (30 * 60), "H")
+
+    /* Format the dates as desired */
+    SET @formattedMalaysiaDate = FormatDate(@malaysiaDate, "DD-MM-YYYY HH:MI:SS")
+    SET @formattedIndiaDate = FormatDate(@indiaDate, "DD-MM-YYYY HH:MI:SS")
+
+]%%
+
+Current timestamp in Malaysia: %%=v(@formattedMalaysiaDate)=%%  
+Current timestamp in India: %%=v(@formattedIndiaDate)=%%
