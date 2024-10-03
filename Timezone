@@ -1,3 +1,26 @@
+
+%%[
+    /* Get the current timestamp in CST (UTC-6) */
+    SET @currentDate = Now()
+
+    /* Adjust for UTC */
+    SET @utcDate = DateAdd(@currentDate, 6, "H")
+
+    /* Malaysia is UTC+8, so add 8 hours to UTC */
+    SET @malaysiaDate = DateAdd(@utcDate, 8, "H")
+
+    /* India is UTC+5:30, so add 5 hours and 30 minutes to UTC */
+    SET @indiaDate = DateAdd(DateAdd(@utcDate, 5, "H"), 30, "M")
+
+    /* Format the dates as desired */
+    SET @formattedMalaysiaDate = FormatDate(@malaysiaDate, "DD-MM-YYYY HH:MI:SS")
+    SET @formattedIndiaDate = FormatDate(@indiaDate, "DD-MM-YYYY HH:MI:SS")
+]%%
+
+Current timestamp in Malaysia: %%=v(@formattedMalaysiaDate)=%%  
+Current timestamp in India: %%=v(@formattedIndiaDate)=%%
+
+
 %%[
     /* Get the current timestamp in UTC */
     SET @currentDate = Now()
