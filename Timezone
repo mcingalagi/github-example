@@ -1,6 +1,15 @@
 SELECT *
 FROM YourDataExtension
 WHERE 
+    /* Adjust FormSubmissionDate to Malaysia Time */
+    DATEADD(HOUR, 14, FormSubmissionDate) >= CAST(CONVERT(VARCHAR, DATEADD(HOUR, 14, GETDATE()), 112) AS DATETIME)
+    AND DATEADD(HOUR, 14, FormSubmissionDate) < CAST(CONVERT(VARCHAR, DATEADD(HOUR, 14, GETDATE() + 1), 112) AS DATETIME)
+
+
+
+SELECT *
+FROM YourDataExtension
+WHERE 
     DATEADD(HOUR, 14, FormSubmissionDate) >= CAST(CONVERT(VARCHAR, GETDATE(), 112) AS DATETIME)
     AND DATEADD(HOUR, 14, FormSubmissionDate) < CAST(CONVERT(VARCHAR, GETDATE() + 1, 112) AS DATETIME)
 
