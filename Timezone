@@ -1,0 +1,18 @@
+%%[
+    /* Get the current timestamp in UTC */
+    SET @currentDate = Now()
+
+    /* Convert the current timestamp to Malaysia timezone */
+    SET @malaysiaDate = ConvertTimeZone(@currentDate, "UTC", "Asia/Kuala_Lumpur")
+    
+    /* Convert the current timestamp to India timezone */
+    SET @indiaDate = ConvertTimeZone(@currentDate, "UTC", "Asia/Kolkata")
+
+    /* Format the dates as desired */
+    SET @formattedMalaysiaDate = FormatDate(@malaysiaDate, "DD-MM-YYYY HH:MI:SS")
+    SET @formattedIndiaDate = FormatDate(@indiaDate, "DD-MM-YYYY HH:MI:SS")
+
+]%%
+
+Current timestamp in Malaysia: %%=v(@formattedMalaysiaDate)=%%  
+Current timestamp in India: %%=v(@formattedIndiaDate)=%%
