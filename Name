@@ -3,3 +3,16 @@ SELECT ID,
        WITHIN GROUP (ORDER BY NameUsageType) AS FullNameDetails
 FROM IndividualNames
 GROUP BY ID;
+
+
+SELECT ID,
+       LISTAGG(COALESCE(GivenName1, '') || ' ' || COALESCE(GivenName2, '') || ' ' || COALESCE(GivenName3, '') || ' ' || LastName || ' (' || NameUsageType || ')', ', ') 
+       WITHIN GROUP (ORDER BY NameUsageType) AS FullNameDetails
+FROM IndividualNames
+WHERE NameUsageType IN ('Legal Name', 'Preferred Name') -- Specify the desired usage types
+GROUP BY ID;
+
+SELECT ID,
+       COALESCE(GivenName1, '') || ' ' || COALESCE(GivenName2, '') || ' ' || COALESCE(GivenName3, '') || ' ' || LastName || ' (Legal Name)' AS FullNameDetails
+FROM IndividualNames
+WHERE NameUsageType = 'Legal Name';
