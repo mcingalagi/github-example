@@ -31,3 +31,21 @@ FROM ConcatenatedNames a
 JOIN ConcatenatedNames b 
   ON a.FullName = b.FullName
   AND a.ID < b.ID;
+
+
+
+WITH ConcatenatedNames AS (
+    SELECT ID,
+           TRIM(
+               COALESCE(GIVEN_NAME_ONE, '') || 
+               CASE WHEN GIVEN_NAME_TWO IS NOT NULL THEN ' ' || GIVEN_NAME_TWO ELSE '' END ||
+               CASE WHEN GIVEN_NAME_THREE IS NOT NULL THEN ' ' || GIVEN_NAME_THREE ELSE '' END ||
+               CASE WHEN LAST_NAME IS NOT NULL THEN ' ' || LAST_NAME ELSE '' END
+           ) AS FullName
+    FROM IndividualNames
+)
+SELECT DISTINCT a.ID AS PartyID1, b.ID AS PartyID2, a.FullName
+FROM ConcatenatedNames a
+JOIN ConcatenatedNames b 
+  ON a.FullName = b.FullName
+  AND a.ID < b.ID;
