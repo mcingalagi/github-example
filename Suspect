@@ -1,3 +1,25 @@
+WITH Hierarchy AS (
+    SELECT SUSPECT_ID,
+           CONT_ID,
+           SUSPECT_CONT_ID,
+           SUSP_ST_TP_CD,
+           1 AS LEVEL
+    FROM Suspect
+    WHERE CONT_ID = 100 OR SUSPECT_CONT_ID = 100  -- Start from Party A
+    UNION ALL
+    SELECT s.SUSPECT_ID,
+           s.CONT_ID,
+           s.SUSPECT_CONT_ID,
+           s.SUSP_ST_TP_CD,
+           h.LEVEL + 1
+    FROM Suspect s
+    JOIN Hierarchy h ON (s.CONT_ID = h.SUSPECT_CONT_ID OR s.SUSPECT_CONT_ID = h.CONT_ID)
+)
+SELECT *
+FROM Hierarchy;
+
+
+
 SELECT SUSPECT_ID,
        CONT_ID,
        SUSPECT_CONT_ID,
