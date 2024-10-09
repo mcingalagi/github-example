@@ -1,4 +1,61 @@
 WITH SuspectHierarchy (party_id, suspect_party_id, relationship_type) AS (
+    -- Base case: Get direct suspects for Party A
+    SELECT 
+        1111111111111111111 AS party_id, -- Replace with actual Party A's CONT_ID
+        CASE 
+            WHEN s.CONT_ID = 1111111111111111111 THEN s.SUSPECT_CONT_ID
+            ELSE s.CONT_ID
+        END AS suspect_party_id,
+        'D' AS relationship_type  -- Direct relationship
+    FROM 
+        Suspect s
+    WHERE 
+        s.CONT_ID = 1111111111111111111 OR s.SUSPECT_CONT_ID = 1111111111111111111 -- Party A in either column
+
+    UNION ALL
+
+    -- Recursive case: Get transitive suspects (for suspects of suspects)
+    SELECT 
+        sh.party_id,
+        CASE 
+            WHEN s.CONT_ID = sh.suspect_party_id THEN s.SUSPECT_CONT_ID
+            ELSE s.CONT_ID
+        END AS suspect_party_id,
+        'T' AS relationship_type  -- Transitive relationship
+    FROM 
+        SuspectHierarchy sh
+    JOIN 
+        Suspect s ON (sh.suspect_party_id = s.CONT_ID OR sh.suspect_party_id = s.SUSPECT_CONT_ID)
+    WHERE 
+        s.CONT_ID <> sh.party_id AND s.SUSPECT_CONT_ID <> sh.party_id -- Prevent looping over same parties
+)
+SEARCH BREADTH FIRST BY party_id SET order_flag
+CYCLE suspect_party_id SET cycle_flag TO 'Y' DEFAULT 'N'
+
+-- Ensure distinct suspect relationships and eliminate duplicates
+SELECT 
+    party_id,
+    LISTAGG(relationship_type || ' (Party ID: ' || suspect_party_id || ')', ', ') 
+        WITHIN GROUP (ORDER BY suspect_party_id) AS suspects
+FROM (
+    -- Ensure distinct suspect pairs, where only Party A is shown as party_id
+    SELECT DISTINCT 
+        1111111111111111111 AS party_id, -- Ensure Party A is always the `party_id`
+        suspect_party_id, 
+        relationship_type
+    FROM 
+        SuspectHierarchy
+    WHERE 
+        cycle_flag = 'N' -- Exclude any cycles
+)
+GROUP BY 
+    party_id;
+
+
+
+
+
+WITH SuspectHierarchy (party_id, suspect_party_id, relationship_type) AS (
     -- Base case: Get direct suspects for the specified party (Party A in this case)
     SELECT 
         CASE 
