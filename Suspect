@@ -1,3 +1,45 @@
+WITH SuspectHierarchy AS (
+    -- Base case: Get direct suspects for the specified party (Party A in this case)
+    SELECT 
+        s.SUSPECT_ID,
+        CASE 
+            WHEN s.CONT_ID = 1111111111111111111 THEN s.SUSPECT_CONT_ID
+            ELSE s.CONT_ID
+        END AS party_id,
+        'D' AS relationship_type
+    FROM 
+        Suspect s
+    WHERE 
+        s.CONT_ID = 1111111111111111111 OR s.SUSPECT_CONT_ID = 1111111111111111111 -- Replace with the actual CONT_ID for Party A
+
+    UNION ALL
+
+    -- Recursive case: Get transitive suspects
+    SELECT 
+        s.SUSPECT_ID,
+        CASE 
+            WHEN s.CONT_ID = sh.party_id THEN s.SUSPECT_CONT_ID
+            ELSE s.CONT_ID
+        END AS party_id,
+        'T' AS relationship_type
+    FROM 
+        SuspectHierarchy sh
+    JOIN 
+        Suspect s ON sh.party_id = s.CONT_ID OR sh.party_id = s.SUSPECT_CONT_ID
+    WHERE 
+        s.SUSPECT_ID <> sh.SUSPECT_ID
+)
+
+SELECT 
+    party_id,
+    LISTAGG(DISTINCT relationship_type || ' (ID: ' || sh.SUSPECT_ID || ')', ', ') AS suspects
+FROM 
+    SuspectHierarchy sh
+GROUP BY 
+    party_id;
+
+
+
 
 SELECT 
     101 AS PARTY_ID,  -- The given ID
