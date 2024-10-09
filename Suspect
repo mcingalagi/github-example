@@ -18,3 +18,28 @@ START WITH CONT_ID = 100 OR SUSPECT_CONT_ID = 100
 CONNECT BY NOCYCLE 
 PRIOR SUSPECT_CONT_ID = CONT_ID AND LEVEL > 1
 OR PRIOR CONT_ID = SUSPECT_CONT_ID AND LEVEL > 1;
+
+
+WITH SuspectHierarchy AS (
+    SELECT SUSPECT_ID,
+           CONT_ID,
+           SUSPECT_CONT_ID,
+           SUSP_ST_TP_CD,
+           1 AS Chain_Level
+    FROM Suspect
+    WHERE CONT_ID = 100 OR SUSPECT_CONT_ID = 100
+    
+    UNION ALL
+    
+    SELECT s.SUSPECT_ID,
+           s.CONT_ID,
+           s.SUSPECT_CONT_ID,
+           s.SUSP_ST_TP_CD,
+           sh.Chain_Level + 1
+    FROM Suspect s
+    JOIN SuspectHierarchy sh
+    ON s.CONT_ID = sh.SUSPECT_CONT_ID OR s.SUSPECT_CONT_ID = sh.CONT_ID
+)
+SELECT *
+FROM SuspectHierarchy
+WHERE Chain_Level > 1; -- Show only levels greater than 1
