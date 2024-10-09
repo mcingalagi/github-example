@@ -1,3 +1,59 @@
+WITH SuspectHierarchy (party_id, suspect_party_id, relationship_type) AS (
+    -- Base case: Get direct suspects for the specified party (Party A in this case)
+    SELECT 
+        CASE 
+            WHEN s.CONT_ID = 1111111111111111111 THEN s.SUSPECT_CONT_ID
+            ELSE s.CONT_ID
+        END AS suspect_party_id,
+        1111111111111111111 AS party_id, -- Replace with actual CONT_ID for Party A
+        'D' AS relationship_type
+    FROM 
+        Suspect s
+    WHERE 
+        s.CONT_ID = 1111111111111111111 OR s.SUSPECT_CONT_ID = 1111111111111111111 -- Replace with actual CONT_ID for Party A
+    
+    UNION ALL
+
+    -- Recursive case: Get transitive suspects
+    SELECT 
+        CASE 
+            WHEN s.CONT_ID = sh.suspect_party_id THEN s.SUSPECT_CONT_ID
+            ELSE s.CONT_ID
+        END AS suspect_party_id,
+        sh.party_id,
+        'T' AS relationship_type
+    FROM 
+        SuspectHierarchy sh
+    JOIN 
+        Suspect s ON sh.suspect_party_id = s.CONT_ID OR sh.suspect_party_id = s.SUSPECT_CONT_ID
+    WHERE 
+        s.CONT_ID <> sh.party_id AND s.SUSPECT_CONT_ID <> sh.party_id -- Prevent looping over same parties
+)
+SEARCH BREADTH FIRST BY party_id SET order_flag
+CYCLE suspect_party_id SET cycle_flag TO 'Y' DEFAULT 'N'
+
+-- Subquery to ensure distinct combinations
+SELECT 
+    party_id,
+    LISTAGG(relationship_type || ' (Party ID: ' || suspect_party_id || ')', ', ') WITHIN GROUP (ORDER BY suspect_party_id) AS suspects
+FROM (
+    SELECT DISTINCT 
+        party_id, 
+        suspect_party_id, 
+        relationship_type
+    FROM 
+        SuspectHierarchy
+    WHERE 
+        cycle_flag = 'N' -- Exclude any cycles
+)
+GROUP BY 
+    party_id;
+
+
+
+
+
+
 
 WITH SuspectHierarchy (SUSPECT_ID, party_id, relationship_type) AS (
     -- Base case: Get direct suspects for the specified party (Party A in this case)
