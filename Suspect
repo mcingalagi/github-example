@@ -1,3 +1,22 @@
+
+SELECT 
+    101 AS PARTY_ID,  -- The given ID
+    LISTAGG(
+        CASE 
+            WHEN CONT_ID = 101 THEN SUSPECT_CONT_ID
+            ELSE CONT_ID 
+        END, ', ') WITHIN GROUP (ORDER BY 
+        CASE 
+            WHEN CONT_ID = 101 THEN SUSPECT_CONT_ID
+            ELSE CONT_ID 
+        END) AS SUSPECT_PARTIES
+FROM 
+    Suspect
+WHERE 
+    CONT_ID = 101 OR SUSPECT_CONT_ID = 101
+GROUP BY 
+    101;  -- No need for a specific column in GROUP BY
+
 SELECT 
     101 AS ROOT_PARTY_ID,
     LISTAGG(SUSPECT_PARTY_INFO, ', ') WITHIN GROUP (ORDER BY SUSPECT_PARTY_INFO) AS SUSPECT_PARTIES,
