@@ -1,0 +1,74 @@
+Here's a revised design document without a specific focus on testers:
+
+---
+
+# **Design Document for Removal of "TRADING Name" from PME and Custom BRE**
+
+## 1. Overview
+This document details the removal of the "TRADING Name" attribute from the PME algorithm and Custom BRE business rule engine. The change is intended to prevent incorrect suspect generation, specifically the creation of A1 (exact duplicate) suspects when entities have different legal names but share the same trading name, business email, and business phone.
+
+## 2. Scope
+The scope of this change is limited to the following:
+- **PME Algorithm**: "TRADING Name" will no longer be part of the matching logic.
+- **Custom BRE**: Business rules involving "TRADING Name" will be updated or removed accordingly.
+
+Other attributes and matching rules remain unaffected.
+
+## 3. Current Behavior
+Currently, the "TRADING Name" attribute is used in the PME and Custom BRE for suspect matching. This causes issues where two different individuals, who have different legal names but share the same business email, business phone, and trading name, are incorrectly flagged as exact duplicates (A1 suspects).
+
+### Example:
+- **Person A**: Legal Name = John Doe, Trading Name = JD Consulting, Business Email = john@jdconsulting.com, Business Phone = 123-456-7890
+- **Person B**: Legal Name = Jane Smith, Trading Name = JD Consulting, Business Email = jane@jdconsulting.com, Business Phone = 123-456-7890
+
+These two individuals are currently matched as exact duplicates due to the inclusion of "TRADING Name" in the matching logic.
+
+## 4. Proposed Change
+The "TRADING Name" attribute will be removed from both the PME algorithm and Custom BRE rules. Moving forward, the matching logic will primarily rely on other key attributes such as:
+- **Legal Name**
+- **Business Email**
+- **Business Phone**
+
+This change ensures that only truly identical records are matched as A1 suspects.
+
+## 5. Expected Behavior After Change
+After the removal of "TRADING Name":
+- Entities with different legal names but the same trading name, business email, and business phone will **not** be flagged as A1 suspects.
+- Matching will be based on more accurate criteria, preventing incorrect suspect generation.
+
+### Example After Change:
+- **Person A** and **Person B** (as described above) will no longer be flagged as A1 suspects because their legal names are different, despite having the same business email, business phone, and trading name.
+
+## 6. Key Areas to Validate
+1. **Matching Logic**:
+   - Ensure that the removal of "TRADING Name" no longer causes false suspect creation.
+   - Confirm that records with matching legal names and other business details still result in an A1 suspect.
+
+2. **Business Rule Adjustments**:
+   - Ensure that business rules in the Custom BRE no longer evaluate "TRADING Name" for suspect generation.
+   - Validate that all remaining business rules function as intended with the updated logic.
+
+3. **Regression Testing**:
+   - Run regression tests to ensure that the removal of "TRADING Name" doesn’t negatively affect other areas of the system.
+   - Validate that no unexpected matches are generated in existing processes.
+
+## 7. Test Scenarios
+- **Scenario 1**: Two entities with different legal names but the same trading name, business email, and business phone should no longer create an A1 suspect.
+- **Scenario 2**: Two entities with the same legal name and matching business details should still be flagged as A1 suspects.
+- **Scenario 3**: Ensure that removing "TRADING Name" does not impact suspect creation based on other attributes like legal name and business identifiers.
+  
+## 8. Rollout and Deployment Plan
+- **Development**: Implement the change by modifying the PME algorithm and Custom BRE.
+- **Testing**: Validate the changes using the outlined test scenarios to ensure correct behavior post-implementation.
+- **Staged Rollout**: Begin with a staging environment for initial deployment and validation, followed by a phased rollout to production environments.
+
+## 9. Risks and Mitigations
+- **Risk**: Potential mismatches if critical attributes other than "TRADING Name" are insufficient to differentiate entities.
+  - **Mitigation**: Careful monitoring of suspect creation after deployment and refining matching logic if necessary.
+  
+- **Risk**: Unintended impact on other suspect generation rules.
+  - **Mitigation**: Perform comprehensive regression testing across all impacted areas.
+
+---
+
+This version outlines the technical and functional changes, key validation areas, and scenarios, ensuring the necessary information is presented clearly for implementation and testing.
